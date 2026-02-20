@@ -1,0 +1,9 @@
+{
+  "name": "金秋缘 - AI 老年人社交平台",
+  "description": "一个温馨、无障碍的老年人社交平台。利用 AI 为长者创建个性化主页、匹配志趣相投的好友，并智能规划精彩的社区活动。",
+  "requestFramePermissions": [
+    "geolocation",
+    "camera",
+    "microphone"
+  ]
+}
