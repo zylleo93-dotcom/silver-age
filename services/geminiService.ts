@@ -2,44 +2,44 @@
 import { GoogleGenAI, Type } from "@google/genai";
 import { UserProfile, FriendMatch, Activity } from "../types";
 
-const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || '' });
+const ai = new GoogleGenAI({ apiKey: import.meta.env.VITE_API_KEY || 'dummy_key_for_test_123' });
 
 export const geminiService = {
   /**
    * 基于用户输入生成个性化标签和温馨简介（中文）。
    */
   async generateProfileAnalysis(intro: string, rawInterests: string, region: string): Promise<{ tags: string[], summary: string }> {
-    const response = await ai.models.generateContent({
-      model: 'gemini-3-flash-preview',
-      contents: `你是一位专业且温暖的老年人社交助理。
-      请分析该用户的自我介绍： "${intro}" 
-      兴趣爱好： "${rawInterests}"
-      所在地区： "${region}"
-      
-      请生成：
-      1. 5个能够体现其爱好或性格的中文标签。
-      2. 一段约2句的温馨、平易近人的中文简介，让其他老年人觉得这位用户很亲切。
-      
-      注意：必须使用中文返回结果。`,
-      config: {
-        responseMimeType: "application/json",
-        responseSchema: {
-          type: Type.OBJECT,
-          properties: {
-            tags: {
-              type: Type.ARRAY,
-              items: { type: Type.STRING }
-            },
-            summary: {
-              type: Type.STRING
-            }
-          },
-          required: ["tags", "summary"]
-        }
-      }
-    });
+    try {
+      // 核心改变：向你本地的 Python 服务器发送请求！
+      const response = await fetch('http://127.0.0.1:8000/api/analyze', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ intro, rawInterests, region })
+      });
 
-    return JSON.parse(response.text || '{"tags":[], "summary":""}');
+      if (!response.ok) {
+        throw new Error('后端接口响应异常');
+      }
+
+      const data = await response.json();
+      
+      try {
+          const parsedResult = JSON.parse(data.result);
+          return parsedResult;
+      } catch (e) {
+          console.error("解析大模型返回格式失败", e);
+          return { tags: ["系统连通成功"], summary: data.result };
+      }
+
+    } catch (error) {
+      console.error("生成分析失败:", error);
+      return { 
+        tags: ["活跃分子", "友善邻里"], 
+        summary: "这位朋友很热情，暂未生成详细简介。" 
+      };
+    }
   },
 
   /**

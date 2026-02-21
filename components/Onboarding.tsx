@@ -19,7 +19,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
     interests: '',
   });
 
-  const handleFinish = async () => {
+  const handleFinish = async (e?: any) => {
+    if (e) e.preventDefault(); // 定海神针：严厉阻止浏览器刷新！
     setLoading(true);
     try {
       const { tags, summary } = await geminiService.generateProfileAnalysis(
