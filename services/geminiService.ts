@@ -11,7 +11,7 @@ export const geminiService = {
   async generateProfileAnalysis(intro: string, rawInterests: string, region: string): Promise<{ tags: string[], summary: string }> {
     try {
       // 核心改变：向你本地的 Python 服务器发送请求！
-      const response = await fetch('https://zylleo-silver-backend.hf.space', {
+      const response = await fetch('https://zylleo-silver-backend.hf.space/api/analyze', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
