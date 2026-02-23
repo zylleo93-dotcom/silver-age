@@ -23,7 +23,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['书法', '散步', '品茶'],
     tags: ['传统艺术', '早起达人', '爱茶之人', '性格温和'],
     aiSummary: '王女士是一位内心宁静的长者，她能在笔墨和清晨的空气中找到生活的乐趣。',
-    avatar: 'https://images.pexels.com/photos/4328961/pexels-photo-4328961.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: '/avatar-wang.jpg'
   },
   {
     id: '3',
@@ -35,7 +35,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['象棋', '修理', '策略'],
     tags: ['解决问题高手', '象棋大师', '充满好奇心'],
     aiSummary: '张先生思维敏捷，不仅是一位象棋高手，更乐于通过修理东西帮助邻里。',
-    avatar: 'https://images.pexels.com/photos/5397733/pexels-photo-5397733.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: '/avatar-zhang.jpg'
   },
   {
     id: '4',
@@ -47,7 +47,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['烘焙', '烹饪', '聊天'],
     tags: ['烘焙达人', '爱讲故事', '热心肠'],
     aiSummary: '陈女士总是带着甜甜的笑容，她的烘焙手艺总能给邻里带来温馨的香气。',
-    avatar: 'https://images.pexels.com/photos/4067935/pexels-photo-4067935.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-2.png'
   },
   {
     id: '5',
@@ -59,7 +59,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['摄影', '旅游', '分享'],
     tags: ['旅行家', '摄影爱好者', '故事大王'],
     aiSummary: '李先生的镜头记录了世界的精彩，他的故事充满了远方的魅力。',
-    avatar: 'https://images.pexels.com/photos/5407054/pexels-photo-5407054.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-2.png'
   },
   {
     id: '6',
@@ -71,7 +71,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['广场舞', '园艺', '健康'],
     tags: ['舞林高手', '绿色生活', '活力四射'],
     aiSummary: '赵女士是社区的活力源泉，她的舞步轻快，她的花园生机勃勃。',
-    avatar: 'https://images.pexels.com/photos/5856247/pexels-photo-5856247.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-3.png'
   },
   {
     id: '7',
@@ -83,7 +83,7 @@ export const MOCK_USERS: UserProfile[] = [
     interests: ['阅读', '历史', '交流'],
     tags: ['知识渊博', '诲人不倦', '思想深邃'],
     aiSummary: '钱先生是一位智慧的长者，他的知识如同图书馆般丰富，乐于与人分享。',
-    avatar: 'https://images.pexels.com/photos/5397723/pexels-photo-5397723.jpeg?auto=compress&cs=tinysrgb&w=200'
+    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-3.png'
   }
 ];
 

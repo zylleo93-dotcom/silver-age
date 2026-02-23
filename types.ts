@@ -38,6 +38,7 @@ export interface ChatMessage {
   senderId: string;
   text: string;
   timestamp: number;
+  read: boolean;
 }
 
 export enum AppScreen {

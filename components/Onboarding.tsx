@@ -68,7 +68,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         interests: selectedInterests,
         tags,
         aiSummary: summary,
-        avatar: `https://picsum.photos/seed/${formData.name}/200`
+        avatar: '' // Avatar will be set in App.tsx
       };
       onComplete(newProfile);
     } catch (error) {

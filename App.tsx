@@ -128,10 +128,16 @@ const App: React.FC = () => {
   };
 
   const handleOnboardingComplete = (profile: UserProfile) => {
-    setCurrentUser(profile);
+    const avatar = profile.gender === 'female' 
+      ? 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-4.png'
+      : 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-4.png';
+    
+    const profileWithAvatar = { ...profile, avatar };
+
+    setCurrentUser(profileWithAvatar);
     setScreen(AppScreen.HOME);
     // Immediately call refreshMatches with the new profile to ensure correct gender is used.
-    refreshMatches(profile);
+    refreshMatches(profileWithAvatar);
   };
 
   if (!currentUser) {
