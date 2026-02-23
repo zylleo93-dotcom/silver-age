@@ -17,7 +17,7 @@ export const MOCK_USERS: UserProfile[] = [
     id: '2',
     name: '王女士',
     gender: 'female',
-    age: 68,
+    age: 55,
     region: '香港, 中西区',
     introduction: '我非常热爱传统书法，每天早上都会去公园散步散心。',
     interests: ['书法', '散步', '品茶'],
@@ -29,7 +29,7 @@ export const MOCK_USERS: UserProfile[] = [
     id: '3',
     name: '张先生',
     gender: 'male',
-    age: 72,
+    age: 60,
     region: '香港, 湾仔区',
     introduction: '退休工程师，喜欢下象棋，也爱钻研修理旧家电。',
     interests: ['象棋', '修理', '策略'],
@@ -41,49 +41,49 @@ export const MOCK_USERS: UserProfile[] = [
     id: '4',
     name: '陈女士',
     gender: 'female',
-    age: 65,
+    age: 60,
     region: '香港, 油尖旺区',
     introduction: '我以前是面点师，现在依然很喜欢做甜品，也爱和邻居们聊天。',
     interests: ['烘焙', '烹饪', '聊天'],
     tags: ['烘焙达人', '爱讲故事', '热心肠'],
     aiSummary: '陈女士总是带着甜甜的笑容，她的烘焙手艺总能给邻里带来温馨的香气。',
-    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-2.png'
+    avatar: '/avatar-chen.jpg'
   },
   {
     id: '5',
     name: '李先生',
     gender: 'male',
-    age: 70,
+    age: 55,
     region: '香港, 九龙城区',
     introduction: '喜欢摄影和旅游，去过很多地方，也爱分享旅行故事。',
     interests: ['摄影', '旅游', '分享'],
     tags: ['旅行家', '摄影爱好者', '故事大王'],
     aiSummary: '李先生的镜头记录了世界的精彩，他的故事充满了远方的魅力。',
-    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-2.png'
+    avatar: '/avatar-li.jpg'
   },
   {
     id: '6',
     name: '赵女士',
     gender: 'female',
-    age: 63,
+    age: 58,
     region: '香港, 观塘区',
     introduction: '热爱广场舞，每天傍晚都会和姐妹们一起跳舞，也喜欢园艺。',
     interests: ['广场舞', '园艺', '健康'],
     tags: ['舞林高手', '绿色生活', '活力四射'],
     aiSummary: '赵女士是社区的活力源泉，她的舞步轻快，她的花园生机勃勃。',
-    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-3.png'
+    avatar: '/avatar-zhao.jpg'
   },
   {
     id: '7',
     name: '钱先生',
     gender: 'male',
-    age: 75,
+    age: 62,
     region: '香港, 荃湾区',
     introduction: '退休教师，喜欢阅读历史书籍，也爱和年轻人交流。',
     interests: ['阅读', '历史', '交流'],
     tags: ['知识渊博', '诲人不倦', '思想深邃'],
     aiSummary: '钱先生是一位智慧的长者，他的知识如同图书馆般丰富，乐于与人分享。',
-    avatar: 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-3.png'
+    avatar: '/avatar-qian.jpg'
   }
 ];
 

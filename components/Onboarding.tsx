@@ -68,7 +68,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onComplete }) => {
         interests: selectedInterests,
         tags,
         aiSummary: summary,
-        avatar: '' // Avatar will be set in App.tsx
+        avatar: formData.gender === 'male' ? '/avatar-user-male.jpg' : '/avatar-user-female.jpg'
       };
       onComplete(newProfile);
     } catch (error) {
