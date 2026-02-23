@@ -8,7 +8,8 @@ import Onboarding from './components/Onboarding';
 import ActivityCard from './components/ActivityCard';
 import ActivityPlanner from './components/ActivityPlanner';
 import ChatRoom from './components/ChatRoom';
-import { Plus, Users, Search, Sparkles, MapPin, Loader2 } from 'lucide-react';
+import FriendMatcher from './components/FriendMatcher';
+import { Plus, Users, Search, Sparkles, MapPin, Loader2, Venus, Mars } from 'lucide-react';
 
 const App: React.FC = () => {
   const [currentUser, setCurrentUser] = useState<UserProfile | null>(null);
@@ -17,18 +18,28 @@ const App: React.FC = () => {
   const [matches, setMatches] = useState<FriendMatch[]>([]);
   const [matchingLoading, setMatchingLoading] = useState(false);
   const [showPlanner, setShowPlanner] = useState(false);
+  const [matchCandidates, setMatchCandidates] = useState<UserProfile[]>([]);
+  const [currentMatchIndex, setCurrentMatchIndex] = useState(0);
+  const [likedMatches, setLikedMatches] = useState<UserProfile[]>([]);
+  const [matchingPhase, setMatchingPhase] = useState<'matching' | 'results'>('matching');
   
   // 聊天相关状态
   const [activeChatPartner, setActiveChatPartner] = useState<UserProfile | null>(null);
   const [allMessages, setAllMessages] = useState<Record<string, ChatMessage[]>>({});
 
   // AI 匹配逻辑
-  const refreshMatches = useCallback(async () => {
-    if (!currentUser) return;
+  const refreshMatches = useCallback(async (user?: UserProfile) => {
+    const userToMatch = user || currentUser;
+    if (!userToMatch) return;
+
     setMatchingLoading(true);
     try {
-      const matched = await geminiService.matchFriends(currentUser, MOCK_USERS);
+      const matched = await geminiService.matchFriends(userToMatch, MOCK_USERS);
       setMatches(matched);
+      setMatchCandidates(matched.slice(0, 3).map(m => m.profile));
+      setCurrentMatchIndex(0);
+      setLikedMatches([]);
+      setMatchingPhase('matching');
     } catch (e) {
       console.error("匹配失败", e);
     } finally {
@@ -40,7 +51,19 @@ const App: React.FC = () => {
     if (currentUser && screen === AppScreen.FRIENDS && matches.length === 0) {
       refreshMatches();
     }
-  }, [currentUser, screen, refreshMatches, matches.length]);
+  }, [currentUser, screen, matches.length]); // Removed refreshMatches from dependencies to prevent re-triggering
+
+  const handleMatchDecision = (liked: boolean) => {
+    if (liked) {
+      setLikedMatches(prev => [...prev, matchCandidates[currentMatchIndex]]);
+    }
+    const nextIndex = currentMatchIndex + 1;
+    if (nextIndex >= matchCandidates.length) {
+      setMatchingPhase('results');
+    } else {
+      setCurrentMatchIndex(nextIndex);
+    }
+  };
 
   const handleJoinActivity = (id: string) => {
     setActivities(prev => prev.map(a => 
@@ -49,9 +72,24 @@ const App: React.FC = () => {
   };
 
   const handlePostActivity = (activity: Activity) => {
-    setActivities([activity, ...activities]);
+    const newActivityWithRegion = { ...activity, region: currentUser!.region };
+    setActivities([newActivityWithRegion, ...activities]);
     setShowPlanner(false);
     setScreen(AppScreen.ACTIVITIES);
+  };
+
+  const handleEditProfile = () => {
+    // For simplicity, we'll go back to onboarding to re-enter profile details.
+    // In a real app, this would navigate to an edit profile screen pre-filled with current data.
+    setCurrentUser(null);
+    setScreen(AppScreen.ONBOARDING);
+  };
+
+  const handleLogout = () => {
+    setCurrentUser(null);
+    setScreen(AppScreen.ONBOARDING);
+    setMatches([]); // Clear matches on logout
+    setAllMessages({}); // Clear messages on logout
   };
 
   const handleOpenChat = (partner: UserProfile) => {
@@ -89,11 +127,15 @@ const App: React.FC = () => {
     }, 2000);
   };
 
+  const handleOnboardingComplete = (profile: UserProfile) => {
+    setCurrentUser(profile);
+    setScreen(AppScreen.HOME);
+    // Immediately call refreshMatches with the new profile to ensure correct gender is used.
+    refreshMatches(profile);
+  };
+
   if (!currentUser) {
-    return <Onboarding onComplete={(profile) => {
-      setCurrentUser(profile);
-      setScreen(AppScreen.HOME);
-    }} />;
+    return <Onboarding onComplete={handleOnboardingComplete} />;
   }
 
   // 渲染聊天室（如果处于聊天屏幕）
@@ -154,69 +196,61 @@ const App: React.FC = () => {
             <h3 className="text-2xl font-bold text-gray-900 mb-4">社区动态</h3>
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-gray-100 text-center">
                 <Users size={40} className="mx-auto text-orange-200 mb-3" />
-                <p className="text-gray-600 font-medium text-lg">今天已有 120+ 位邻居在 {currentUser.region} 活跃！</p>
+                <p className="text-gray-600 font-medium text-lg">今天已有 120+ 位邻居在 香港 活跃！</p>
             </div>
           </div>
         </div>
       )}
 
       {screen === AppScreen.FRIENDS && (
-        <div className="p-5 space-y-6 animate-in fade-in duration-500">
-          <div className="flex justify-between items-center">
+        <div className="p-5 flex flex-col h-full animate-in fade-in duration-500">
+          <div className="flex justify-between items-center mb-4 flex-shrink-0">
             <h2 className="text-3xl font-bold text-gray-900">AI 推荐好友</h2>
-            <button 
-                onClick={refreshMatches}
-                className="text-orange-600 p-2 hover:bg-orange-50 rounded-xl transition-colors"
-                title="刷新推荐"
-            >
-                <Sparkles size={24} />
-            </button>
           </div>
-          
-          <p className="text-gray-600 text-lg">为您找到了几位同样喜欢 <span className="font-bold text-orange-600">{currentUser.interests[0] || '社交'}</span> 的老邻居。</p>
 
           {matchingLoading ? (
-            <div className="py-20 text-center">
-                <Loader2 size={48} className="animate-spin mx-auto text-orange-500 mb-4" />
-                <p className="text-xl font-medium text-gray-500 italic">正在向 AI 助手寻找最适合您的朋友...</p>
+            <div className="flex-1 flex flex-col items-center justify-center text-center">
+              <Loader2 size={48} className="animate-spin mx-auto text-orange-500 mb-4" />
+              <p className="text-xl font-medium text-gray-500 italic">正在向 AI 助手寻找最适合您的朋友...</p>
             </div>
+          ) : matchingPhase === 'matching' && matchCandidates.length > 0 ? (
+            <FriendMatcher 
+              candidates={matchCandidates}
+              currentIndex={currentMatchIndex}
+              onDecision={handleMatchDecision}
+            />
           ) : (
-            <div className="grid grid-cols-1 gap-4">
-              {matches.map((match) => (
-                <div key={match.userId} className="bg-white rounded-3xl p-5 shadow-sm border border-gray-100 flex flex-col gap-4">
-                  <div className="flex items-center gap-4">
-                    <img src={match.profile.avatar} alt="" className="w-16 h-16 rounded-2xl object-cover shadow-sm" />
-                    <div className="flex-1">
-                      <div className="flex justify-between items-start">
-                        <h4 className="text-xl font-bold text-gray-900">{match.profile.name}</h4>
-                        <div className="bg-green-50 text-green-700 text-xs font-black px-2 py-1 rounded-lg border border-green-100">
-                          {match.compatibilityScore}% 匹配度
-                        </div>
+            <div className="flex-1 flex flex-col">
+              {likedMatches.length > 0 ? (
+                <div className="space-y-4">
+                  <p className="text-gray-600 text-lg font-medium">您喜欢了 {likedMatches.length} 位朋友，和他们聊聊吧！</p>
+                  {likedMatches.map((profile) => (
+                    <div key={profile.id} className="bg-white rounded-3xl p-4 shadow-sm border border-gray-100 flex items-center gap-4">
+                      <img src={profile.avatar} alt={profile.name} className="w-20 h-20 rounded-2xl object-cover shadow-sm" referrerPolicy="no-referrer" />
+                      <div className="flex-1">
+                        <h4 className="text-xl font-bold text-gray-900">{profile.name}</h4>
+                        <p className="text-gray-500">{profile.region}</p>
                       </div>
-                      <div className="flex items-center gap-1 text-gray-500 text-sm">
-                        <MapPin size={14} />
-                        <span>{match.profile.region}</span>
-                      </div>
+                      <button 
+                        onClick={() => handleOpenChat(profile)}
+                        className="bg-orange-500 text-white py-3 px-5 rounded-xl font-bold hover:bg-orange-600 transition-all active:scale-95"
+                      >
+                        去聊天
+                      </button>
                     </div>
-                  </div>
-                  <div className="bg-orange-50/50 p-4 rounded-2xl border border-orange-100">
-                    <p className="text-orange-900 italic font-medium">“{match.matchingReason}”</p>
-                  </div>
-                  <div className="flex gap-2 overflow-x-auto pb-1 no-scrollbar">
-                    {match.profile.tags.map(tag => (
-                        <span key={tag} className="whitespace-nowrap bg-gray-100 px-3 py-1 rounded-full text-xs font-bold text-gray-600">
-                            {tag}
-                        </span>
-                    ))}
-                  </div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center flex-1 flex flex-col items-center justify-center">
+                  <p className="text-xl font-bold text-gray-700 mb-4">暂时没有找到想要的人</p>
                   <button 
-                    onClick={() => handleOpenChat(match.profile)}
-                    className="w-full bg-orange-500 text-white py-4 rounded-2xl font-bold text-lg hover:bg-orange-600 shadow-lg shadow-orange-100 transition-all active:scale-95 flex items-center justify-center gap-2"
+                    onClick={refreshMatches}
+                    className="bg-orange-500 text-white px-8 py-4 rounded-2xl font-bold text-lg hover:bg-orange-600 transition-all"
                   >
-                    去聊天 👋
+                    再试试
                   </button>
                 </div>
-              ))}
+              )}
             </div>
           )}
         </div>
@@ -244,7 +278,9 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            {activities.map(activity => (
+            {activities
+              .filter(activity => activity.region.startsWith('香港'))
+              .map(activity => (
               <ActivityCard 
                 key={activity.id} 
                 activity={activity} 
@@ -265,7 +301,19 @@ const App: React.FC = () => {
                     <Sparkles size={16} />
                 </div>
             </div>
-            <h2 className="text-3xl font-bold text-gray-900 mb-1">{currentUser.name}</h2>
+            <div className="flex items-center justify-center gap-2 mb-1">
+              <h2 className="text-3xl font-bold text-gray-900">{currentUser.name}</h2>
+              {currentUser.gender === 'female' && (
+                <div className="bg-pink-100 text-pink-600 p-1.5 rounded-full">
+                  <Venus size={16} />
+                </div>
+              )}
+              {currentUser.gender === 'male' && (
+                <div className="bg-blue-100 text-blue-600 p-1.5 rounded-full">
+                  <Mars size={16} />
+                </div>
+              )}
+            </div>
             <div className="flex items-center gap-1 text-gray-500 font-medium mb-4">
                 <MapPin size={18} />
                 <span>{currentUser.region}</span>
@@ -284,11 +332,17 @@ const App: React.FC = () => {
           </div>
 
           <div className="space-y-4">
-            <button className="w-full bg-white text-left p-6 rounded-3xl border border-gray-100 font-bold text-lg flex justify-between items-center hover:bg-gray-50">
+            <button 
+              onClick={handleEditProfile}
+              className="w-full bg-white text-left p-6 rounded-3xl border border-gray-100 font-bold text-lg flex justify-between items-center hover:bg-gray-50"
+            >
                 <span>修改兴趣爱好</span>
                 <span className="text-gray-400">→</span>
             </button>
-            <button className="w-full bg-white text-left p-6 rounded-3xl border border-gray-100 font-bold text-lg flex justify-between items-center hover:bg-gray-50 text-red-500">
+            <button 
+              onClick={handleLogout}
+              className="w-full bg-white text-left p-6 rounded-3xl border border-gray-100 font-bold text-lg flex justify-between items-center hover:bg-gray-50 text-red-500"
+            >
                 <span>退出登录</span>
             </button>
           </div>

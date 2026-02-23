@@ -50,15 +50,36 @@ export const geminiService = {
     
     if (candidates.length === 0) return [];
 
-    // 直接从传进来的候选人里挑前两个，匹配上完美的文案，0延时返回
-    return candidates.slice(0, 2).map((candidate, index) => ({
+    const oppositeGender = currentUser.gender === 'male' ? 'female' : 'male';
+    const allHkCandidates = candidates.filter(c => c.gender === oppositeGender && c.region.startsWith('香港'));
+
+    const sameDistrictCandidates = allHkCandidates.filter(c => c.region === currentUser.region);
+    const otherDistrictCandidates = allHkCandidates.filter(c => c.region !== currentUser.region);
+
+    let selectedMatches: any[] = [];
+
+    // Prioritize users from the same district
+    selectedMatches = sameDistrictCandidates.slice(0, 3).map((candidate, index) => ({
       userId: candidate.id,
-      compatibilityScore: index === 0 ? 95 : 88,
-      matchingReason: index === 0 
-        ? `和您一样，${candidate.name}也对${currentUser.tags[0] || '这些爱好'}感兴趣，你们一定有很多共同话题可以交流。`
-        : `${candidate.name}性格非常温和，在社区也很活跃，非常适合一起结伴参与活动。`,
+      compatibilityScore: 90 + Math.floor(Math.random() * 10), // 90-99
+      matchingReason: `${candidate.name}和您都在${currentUser.region}，可以一起探索当地的活动和美食。`,
       profile: candidate
     }));
+
+    // Fill remaining slots with users from other Hong Kong districts
+    if (selectedMatches.length < 3) {
+      const remainingNeeded = 3 - selectedMatches.length;
+      otherDistrictCandidates.slice(0, remainingNeeded).forEach(candidate => {
+        selectedMatches.push({
+          userId: candidate.id,
+          compatibilityScore: 80 + Math.floor(Math.random() * 10), // 80-89
+          matchingReason: `${candidate.name}和您同在香港，虽然不在同一个区，但有很多共同的爱好可以交流。`,
+          profile: candidate
+        });
+      });
+    }
+
+    return selectedMatches;
   },
 
   /**
@@ -77,13 +98,13 @@ export const geminiService = {
       },
       {
         title: "社区长者智能手机互助班",
-        description: "年轻社工手把手教您用微信、刷短视频、防诈骗，学会之后还能和异地子女畅快视频聊天。",
+        description: `在${user.region || '本社区'}，年轻社工手把手教您用微信、刷短视频、防诈骗，学会之后还能和异地子女畅快视频聊天。`,
         category: "学习互助",
         maxParticipants: 10
       },
       {
         title: "春季公园踏青与摄影教学",
-        description: "组织大家去附近的公园散步，并由摄影爱好者分享如何用手机拍出好看的花朵和人物照。",
+        description: `在${user.region || '本社区'}，组织大家去附近的公园散步，并由摄影爱好者分享如何用手机拍出好看的花朵和人物照。`,
         category: "户外活动",
         maxParticipants: 20
       }

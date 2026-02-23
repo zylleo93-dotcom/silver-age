@@ -13,6 +13,9 @@ interface ActivityPlannerProps {
 const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ user, onPost, onClose }) => {
   const [plans, setPlans] = useState<Partial<Activity>[]>([]);
   const [loading, setLoading] = useState(false);
+  const [editingPlan, setEditingPlan] = useState<Partial<Activity> | null>(null);
+  const [eventDate, setEventDate] = useState(new Date().toISOString().split('T')[0]);
+  const [eventTime, setEventTime] = useState('10:00');
 
   const generatePlans = async () => {
     setLoading(true);
@@ -26,18 +29,25 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ user, onPost, onClose
     }
   };
 
-  const handleCreate = (plan: Partial<Activity>) => {
+  const handleSelectPlan = (plan: Partial<Activity>) => {
+    setEditingPlan(plan);
+    setEventDate(new Date().toISOString().split('T')[0]);
+    setEventTime('10:00');
+  };
+
+  const handleConfirmAndPost = () => {
+    if (!editingPlan) return;
     const newActivity: Activity = {
       id: Math.random().toString(36).substr(2, 9),
-      title: plan.title || '社区聚会',
-      description: plan.description || '',
+      title: editingPlan.title || '社区聚会',
+      description: editingPlan.description || '',
       creatorId: user.id,
       creatorName: user.name,
       region: user.region,
-      date: new Date().toISOString().split('T')[0],
-      time: '上午 10:00',
-      category: plan.category || '社交',
-      maxParticipants: plan.maxParticipants || 10,
+      date: eventDate,
+      time: eventTime,
+      category: editingPlan.category || '社交',
+      maxParticipants: editingPlan.maxParticipants || 10,
       participants: [user.id]
     };
     onPost(newActivity);
@@ -76,30 +86,72 @@ const ActivityPlanner: React.FC<ActivityPlannerProps> = ({ user, onPost, onClose
           )}
 
           {plans.length > 0 && !loading && (
-            <div className="space-y-4">
-              <p className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2">为您推荐的方案</p>
-              {plans.map((plan, idx) => (
-                <div key={idx} className="bg-orange-50/50 border border-orange-100 rounded-2xl p-5 hover:border-orange-300 transition-all">
-                  <span className="text-xs font-bold text-orange-600 bg-white px-2 py-1 rounded-md border border-orange-100 mb-2 inline-block uppercase">
-                    {plan.category}
-                  </span>
-                  <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.title}</h4>
-                  <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
+            <>
+              {editingPlan ? (
+                <div className="space-y-4 animate-in fade-in">
+                  <p className="text-sm font-bold text-orange-600 uppercase tracking-widest">确认活动详情</p>
+                  <div className="bg-orange-50/50 border border-orange-100 rounded-2xl p-5 space-y-4">
+                    <h4 className="text-xl font-bold text-gray-900">{editingPlan.title}</h4>
+                    <p className="text-gray-700">{editingPlan.description}</p>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">活动日期</label>
+                      <input 
+                        type="date"
+                        value={eventDate}
+                        onChange={(e) => setEventDate(e.target.value)}
+                        className="w-full p-3 text-lg border-2 border-orange-100 rounded-xl focus:border-orange-500 outline-none"
+                      />
+                    </div>
+                    <div>
+                      <label className="block text-sm font-semibold text-gray-700 mb-1">活动时间</label>
+                      <input 
+                        type="time"
+                        value={eventTime}
+                        onChange={(e) => setEventTime(e.target.value)}
+                        className="w-full p-3 text-lg border-2 border-orange-100 rounded-xl focus:border-orange-500 outline-none"
+                      />
+                    </div>
+                  </div>
                   <button 
-                    onClick={() => handleCreate(plan)}
-                    className="w-full bg-white text-orange-600 border-2 border-orange-200 py-3 rounded-xl font-bold hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all flex items-center justify-center gap-2"
+                    onClick={handleConfirmAndPost}
+                    className="w-full bg-orange-500 text-white py-4 rounded-xl font-bold text-lg hover:bg-orange-600 transition-all flex items-center justify-center gap-2"
                   >
-                    <Plus size={20} /> 采用该方案并发布
+                    <Plus size={20} /> 确认并发布
+                  </button>
+                  <button 
+                    onClick={() => setEditingPlan(null)}
+                    className="w-full py-3 text-gray-600 font-bold hover:underline"
+                  >
+                    返回建议列表
                   </button>
                 </div>
-              ))}
-              <button 
-                onClick={generatePlans}
-                className="w-full py-4 text-orange-500 font-bold hover:underline"
-              >
-                换一批建议
-              </button>
-            </div>
+              ) : (
+                <div className="space-y-4 animate-in fade-in">
+                  <p className="text-sm font-bold text-orange-600 uppercase tracking-widest mb-2">为您推荐的方案</p>
+                  {plans.map((plan, idx) => (
+                    <div key={idx} className="bg-orange-50/50 border border-orange-100 rounded-2xl p-5 hover:border-orange-300 transition-all">
+                      <span className="text-xs font-bold text-orange-600 bg-white px-2 py-1 rounded-md border border-orange-100 mb-2 inline-block uppercase">
+                        {plan.category}
+                      </span>
+                      <h4 className="text-lg font-bold text-gray-900 mb-2">{plan.title}</h4>
+                      <p className="text-sm text-gray-600 mb-4">{plan.description}</p>
+                      <button 
+                        onClick={() => handleSelectPlan(plan)}
+                        className="w-full bg-white text-orange-600 border-2 border-orange-200 py-3 rounded-xl font-bold hover:bg-orange-500 hover:text-white hover:border-orange-500 transition-all flex items-center justify-center gap-2"
+                      >
+                        <Plus size={20} /> 采用该方案
+                      </button>
+                    </div>
+                  ))}
+                  <button 
+                    onClick={generatePlans}
+                    className="w-full py-4 text-orange-500 font-bold hover:underline"
+                  >
+                    换一批建议
+                  </button>
+                </div>
+              )}
+            </>
           )}
         </div>
       </div>

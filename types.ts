@@ -2,6 +2,7 @@
 export interface UserProfile {
   id: string;
   name: string;
+  gender: 'male' | 'female' | 'other';
   age: number;
   region: string;
   introduction: string;

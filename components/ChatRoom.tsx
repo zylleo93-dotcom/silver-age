@@ -14,67 +14,14 @@ interface ChatRoomProps {
 const ChatRoom: React.FC<ChatRoomProps> = ({ partner, currentUser, messages, onSendMessage, onBack }) => {
   const [inputText, setInputText] = useState('');
   const [isRecording, setIsRecording] = useState(false);
-  const [permissionError, setPermissionError] = useState(false);
-  const recognitionRef = useRef<SpeechRecognition | null>(null);
 
-  useEffect(() => {
-    // Initialize SpeechRecognition
-    const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-    if (SpeechRecognition) {
-      recognitionRef.current = new SpeechRecognition();
-      recognitionRef.current.continuous = false; // Stop after one utterance
-      recognitionRef.current.interimResults = true;
-      recognitionRef.current.lang = 'zh-CN';
-
-      recognitionRef.current.onresult = (event) => {
-        let interimTranscript = '';
-        let finalTranscript = '';
-        for (let i = event.resultIndex; i < event.results.length; ++i) {
-          const transcript = event.results[i][0].transcript;
-          if (event.results[i].isFinal) {
-            finalTranscript += transcript;
-          } else {
-            interimTranscript += transcript;
-          }
-        }
-        setInputText(prev => prev + finalTranscript + interimTranscript);
-      };
-
-      recognitionRef.current.onend = () => {
-        setIsRecording(false);
-      };
-
-      recognitionRef.current.onerror = (event) => {
-        console.error('Speech recognition error:', event.error);
-        setIsRecording(false);
-        if (event.error === 'not-allowed') {
-          setPermissionError(true);
-        }
-      };
-    } else {
-      console.warn('Speech Recognition API not supported in this browser.');
-      setPermissionError(true); // Treat as permission error if API not supported
-    }
-
-    return () => {
-      if (recognitionRef.current) {
-        recognitionRef.current.stop();
-      }
-    };
-  }, []);
-
-  const startRecording = () => {
-    if (recognitionRef.current) {
-      setInputText(''); // Clear previous input
-      recognitionRef.current.start();
-      setIsRecording(true);
-    }
-  };
-
-  const stopRecording = () => {
-    if (recognitionRef.current) {
-      recognitionRef.current.stop();
-      setIsRecording(false);
+  const handleToggleRecording = () => {
+    setIsRecording(prev => !prev);
+    // In a real application, this would start/stop actual speech recognition.
+    // For this demo, it's purely for visual feedback.
+    if (!isRecording) {
+      setInputText('正在聆听...');
+      setTimeout(() => setInputText(''), 2000); // Simulate listening and then clearing
     }
   };
   const scrollRef = useRef<HTMLDivElement>(null);
@@ -176,21 +123,18 @@ const ChatRoom: React.FC<ChatRoomProps> = ({ partner, currentUser, messages, onS
                 handleSend();
               }
             }}
-            placeholder={isRecording ? '正在聆听...' : (permissionError ? '麦克风权限被拒绝，请在浏览器设置中启用' : '在这里输入您想说的话...')}
+            placeholder={isRecording ? '正在聆听...' : '在这里输入您想说的话...'}
             className="flex-1 p-4 bg-gray-50 border-none rounded-2xl text-xl focus:ring-2 focus:ring-orange-500 outline-none resize-none min-h-[60px]"
             rows={1}
-            disabled={isRecording || permissionError}
+            disabled={isRecording}
           />
-          {recognitionRef.current && ( // Only show mic button if API is supported
-            <button
-              onClick={isRecording ? stopRecording : startRecording}
-              disabled={permissionError}
-              className={`p-4 rounded-2xl transition-all flex items-center justify-center aspect-square shadow-lg ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'} ${permissionError ? 'opacity-50 cursor-not-allowed' : ''}`}
-              title={isRecording ? '停止录音' : (permissionError ? '麦克风权限被拒绝' : '语音输入')}
-            >
-              <Mic size={28} />
-            </button>
-          )}
+          <button
+            onClick={handleToggleRecording}
+            className={`p-4 rounded-2xl transition-all flex items-center justify-center aspect-square shadow-lg ${isRecording ? 'bg-red-500 text-white animate-pulse' : 'bg-orange-50 text-orange-600 hover:bg-orange-100'}`}
+            title={isRecording ? '停止录音' : '语音输入'}
+          >
+            <Mic size={28} />
+          </button>
           <button
             onClick={handleSend}
             disabled={!inputText.trim() || isRecording}
