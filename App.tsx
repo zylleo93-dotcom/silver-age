@@ -128,17 +128,12 @@ const App: React.FC = () => {
   };
 
   const handleOnboardingComplete = (profile: UserProfile) => {
-    const avatar = profile.gender === 'female' 
-      ? 'https://storage.googleapis.com/maker-me-assets/assets/elderly-woman-4.png'
-      : 'https://storage.googleapis.com/maker-me-assets/assets/elderly-man-4.png';
-    
-    const profileWithAvatar = { ...profile, avatar };
-
-    setCurrentUser(profileWithAvatar);
-    setScreen(AppScreen.HOME);
-    // Immediately call refreshMatches with the new profile to ensure correct gender is used.
-    refreshMatches(profileWithAvatar);
-  };
+  // 我们不再横生枝节，直接把 Onboarding 里做好的档案（含本地头像）保存起来
+  setCurrentUser(profile);
+  setScreen(AppScreen.HOME);
+  // 同样，匹配好友时也用最原始的档案
+  refreshMatches(profile);
+};
 
   if (!currentUser) {
     return <Onboarding onComplete={handleOnboardingComplete} />;
